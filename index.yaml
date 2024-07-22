@@ -20,6 +20,45 @@ entries:
           displayName: NodePool
           description: NodePool is the Schema for the NodePools API.
     apiVersion: v2
+    appVersion: 0.36.2
+    created: "2024-07-22T08:38:31.082550983Z"
+    description: A Helm chart for Karpenter, an open-source node provisioning project
+      built for Kubernetes.
+    digest: d3b07e3a8f15bd5f2a389e2f649199f47fffc6ea9fe66437b75abfd7f149c7c0
+    home: https://karpenter.sh/
+    icon: https://repository-images.githubusercontent.com/278480393/dab059c8-caa1-4b55-aaa7-3d30e47a5616
+    keywords:
+    - cluster
+    - node
+    - scheduler
+    - autoscaling
+    - lifecycle
+    name: karpenter
+    sources:
+    - https://github.com/aws/karpenter-provider-aws/
+    type: application
+    urls:
+    - https://github.com/everpcpc/helm-charts/releases/download/karpenter-0.36.1/karpenter-0.36.1.tgz
+    version: 0.36.1
+  - annotations:
+      artifacthub.io/alternativeName: karpenter-provider-aws
+      artifacthub.io/crds: |
+        - kind: EC2NodeClass
+          version: v1beta1
+          name: ec2nodeclasses.karpenter.k8s.aws
+          displayName: EC2NodeClass
+          description: EC2NodeClass is the Schema for the EC2NodeClass API.
+        - kind: NodeClaim
+          version: v1beta1
+          name: nodeclaims.karpenter.sh
+          displayName: NodeClaim
+          description: NodeClaim is the Schema for the NodeClaims API.
+        - kind: NodePool
+          version: v1beta1
+          name: nodepools.karpenter.sh
+          displayName: NodePool
+          description: NodePool is the Schema for the NodePools API.
+    apiVersion: v2
     appVersion: 0.36.0
     created: "2024-07-22T08:22:38.96665622Z"
     description: A Helm chart for Karpenter, an open-source node provisioning project
@@ -103,4 +142,4 @@ entries:
     urls:
     - https://github.com/everpcpc/helm-charts/releases/download/karpenter-0.27.5/karpenter-0.27.5.tgz
     version: 0.27.5
-generated: "2024-07-22T08:22:38.966669865Z"
+generated: "2024-07-22T08:38:31.082621394Z"
