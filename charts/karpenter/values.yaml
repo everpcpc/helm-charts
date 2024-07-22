@@ -27,7 +27,9 @@ serviceMonitor:
   enabled: false
   # -- Additional labels for the ServiceMonitor.
   additionalLabels: {}
-  # -- Endpoint configuration for the ServiceMonitor.
+  # -- Configuration on `http-metrics` endpoint for the ServiceMonitor. 
+  # Not to be used to add additional endpoints. 
+  # See the Prometheus operator documentation for configurable fields https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api.md#endpoint
   endpointConfig: {}
 # -- Number of replicas.
 replicas: 2
@@ -44,6 +46,9 @@ podAnnotations: {}
 podDisruptionBudget:
   name: karpenter
   maxUnavailable: 1
+# -- SecurityContext for the pod.
+podSecurityContext:
+  fsGroup: 65532
 # -- PriorityClass name for the pod.
 priorityClassName: system-cluster-critical
 # -- Override the default termination grace period for the pod.
@@ -52,7 +57,7 @@ terminationGracePeriodSeconds:
 # This is required when using a custom CNI.
 hostNetwork: false
 # -- Configure the DNS Policy for the pod
-dnsPolicy: Default
+dnsPolicy: ClusterFirst
 # -- Configure DNS Config for the pod
 dnsConfig: {}
 #  options:
@@ -67,8 +72,6 @@ affinity:
     requiredDuringSchedulingIgnoredDuringExecution:
       nodeSelectorTerms:
         - matchExpressions:
-            - key: karpenter.sh/provisioner-name
-              operator: DoesNotExist
             - key: karpenter.sh/nodepool
               operator: DoesNotExist
   podAntiAffinity:
@@ -98,9 +101,9 @@ controller:
     # -- Repository path to the controller image.
     repository: public.ecr.aws/karpenter/controller
     # -- Tag of the controller image.
-    tag: v0.32.0
+    tag: 0.36.0
     # -- SHA256 digest of the controller image.
-    digest: sha256:92f977a6a9d981155b5404f830a5e7fcf7fbd5ba0cadd0ac66a062de77c036b5
+    digest: sha256:90adaba9e8e9f66244324ca64408a5abbfe063f8c41fbbfebf226bdda4fadd58
   # -- Additional environment variables for the controller pod.
   env: []
   # - name: AWS_REGION
@@ -136,18 +139,18 @@ controller:
     port: 8081
 webhook:
   # -- Whether to enable the webhooks and webhook permissions.
-  enabled: true
+  enabled: false
   # -- The container port to use for the webhook.
   port: 8443
   metrics:
     # -- The container port to use for webhook metrics.
     port: 8001
-# -- Global log level
-logLevel: debug
+# -- Global log level, defaults to 'info'
+logLevel: info
 # -- Log configuration (Deprecated: Logging configuration will be dropped by v1, use logLevel instead)
 logConfig:
   # -- Whether to enable provisioning and mounting the log ConfigMap
-  enabled: true
+  enabled: false
   # -- Log outputPaths - defaults to stdout only
   outputPaths:
     - stdout
@@ -158,16 +161,14 @@ logConfig:
   logEncoding: json
   # -- Component-based log configuration
   logLevel:
-    # -- Global log level, defaults to 'debug'
-    global: debug
-    # -- Controller log level, defaults to 'debug'
-    controller: debug
+    # -- Global log level, defaults to 'info'
+    global: info
+    # -- Controller log level, defaults to 'info'
+    controller: info
     # -- Error log level, defaults to 'error'
     webhook: error
 # -- Global Settings to configure Karpenter
 settings:
-  # -- AWS-specific settings (Deprecated: The AWS block inside of settings was flattened into settings)
-  aws: {}
   # -- The maximum length of a batch window. The longer this is, the more pods we can consider for provisioning at one
   # time which usually results in fewer but larger nodes.
   batchMaxDuration: 10s
@@ -190,7 +191,8 @@ settings:
   isolatedVPC: false
   # -- The VM memory overhead as a percent that will be subtracted from the total memory for all instance types
   vmMemoryOverheadPercent: 0.075
-  # -- interruptionQueue is disabled if not specified. Enabling interruption handling may
+  # -- Interruption queue is the name of the SQS queue used for processing interruption events from EC2
+  # Interruption handling is disabled if not specified. Enabling interruption handling may
   # require additional permissions on the controller service account. Additional permissions are outlined in the docs.
   interruptionQueue: ""
   # -- Reserved ENIs are not included in the calculations for max-pods or kube-reserved
@@ -199,7 +201,10 @@ settings:
   # -- Feature Gate configuration values. Feature Gates will follow the same graduation process and requirements as feature gates
   # in Kubernetes. More information here https://kubernetes.io/docs/reference/command-line-tools-reference/feature-gates/#feature-gates-for-alpha-or-beta-features
   featureGates:
-    # -- drift is in ALPHA and is disabled by default.
-    # Setting drift to true enables the drift disruption method to watch for drift between currently deployed nodes
-    # and the desired state of nodes set in provisioners and node templates
-    drift: false
+    # -- drift is in BETA and is enabled by default.
+    # Setting drift to false disables the drift disruption method to watch for drift between currently deployed nodes
+    # and the desired state of nodes set in nodepools and nodeclasses
+    drift: true
+    # -- spotToSpotConsolidation is ALPHA and is disabled by default.
+    # Setting this to true will enable spot replacement consolidation for both single and multi-node consolidation.
+    spotToSpotConsolidation: false
